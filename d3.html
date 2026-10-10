@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cherif BISSIRIOU | D3 Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Cherif BISSIRIOU</h1>
+      <nav aria-label="Main navigation">
+        <a href="index.html">Home</a> |
+        <a href="about.html">About</a> |
+        <a href="contact.html">Contact</a>
+      </nav>
+    </header>
+
+    <main>
+      <section aria-labelledby="presentation-title">
+        <h2 id="presentation-title">Presentation</h2>
+        <p>I'm Datascientist</p>
+      </section>
+
+      <section class="chart-card" aria-labelledby="chart-title">
+        <div class="chart-heading">
+          <h2 id="chart-title">Sample values</h2>
+          <p>Bar chart built with D3.js</p>
+        </div>
+        <div id="bar-chart" role="img" aria-label="Bar chart showing A: 1, B: 5, C: 8, D: 10"></div>
+      </section>
+    </main>
+
+    <footer>
+      <p>&copy; 2026 My Website</p>
+    </footer>
+
+    <script>
+      const data = [
+        { name: "A", value: 1 },
+        { name: "B", value: 5 },
+        { name: "C", value: 8 },
+        { name: "D", value: 10 }
+      ];
+
+      function renderBarChart() {
+        const container = document.querySelector("#bar-chart");
+        if (!container || typeof d3 === "undefined") {
+          if (container) container.textContent = "The chart could not be loaded. Check your internet connection.";
+          return;
+        }
+
+        const width = Math.max(container.clientWidth, 280);
+        const height = 320;
+        const margin = { top: 24, right: 16, bottom: 42, left: 38 };
+        const innerWidth = width - margin.left - margin.right;
+        const innerHeight = height - margin.top - margin.bottom;
+
+        d3.select(container).selectAll("*").remove();
+
+        const svg = d3.select(container)
+          .append("svg")
+          .attr("viewBox", `0 0 ${width} ${height}`)
+          .attr("role", "img")
+          .attr("aria-labelledby", "svg-chart-title svg-chart-desc");
+
+        svg.append("title").attr("id", "svg-chart-title").text("Sample values bar chart");
+        svg.append("desc").attr("id", "svg-chart-desc").text("Values: A is 1, B is 5, C is 8, and D is 10.");
+
+        const chart = svg.append("g")
+          .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        const x = d3.scaleBand()
+          .domain(data.map(d => d.name))
+          .range([0, innerWidth])
+          .padding(0.28);
+
+        const y = d3.scaleLinear()
+          .domain([0, d3.max(data, d => d.value) * 1.15])
+          .nice()
+          .range([innerHeight, 0]);
+
+        chart.append("g")
+          .attr("class", "grid")
+          .call(d3.axisLeft(y).ticks(5).tickSize(-innerWidth).tickFormat(""))
+          .call(g => g.select(".domain").remove());
+
+        chart.append("g")
+          .attr("class", "axis")
+          .call(d3.axisLeft(y).ticks(5).tickSizeOuter(0));
+
+        chart.append("g")
+          .attr("class", "axis")
+          .attr("transform", `translate(0,${innerHeight})`)
+          .call(d3.axisBottom(x).tickSizeOuter(0));
+
+        chart.selectAll(".bar")
+          .data(data)
+          .join("rect")
+          .attr("class", "bar")
+          .attr("x", d => x(d.name))
+          .attr("y", d => y(d.value))
+          .attr("width", x.bandwidth())
+          .attr("height", d => innerHeight - y(d.value))
+          .attr("rx", 5);
+
+        chart.selectAll(".value-label")
+          .data(data)
+          .join("text")
+          .attr("class", "value-label")
+          .attr("x", d => x(d.name) + x.bandwidth() / 2)
+          .attr("y", d => y(d.value) - 8)
+          .text(d => d.value);
+      }
+
+      renderBarChart();
+      let resizeFrame;
+      window.addEventListener("resize", () => {
+        cancelAnimationFrame(resizeFrame);
+        resizeFrame = requestAnimationFrame(renderBarChart);
+      });
+    </script>
+  </body>
+</html>
